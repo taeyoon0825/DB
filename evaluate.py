@@ -1,5 +1,11 @@
 """
-Quantitative evaluation for full vs keyword embedding search.
+평가 로직.
+
+이 파일은 full 임베딩과 keyword 임베딩의 검색 성능을 비교한다.
+현재 평가는 "이미지 단위 정답"이 아니라 "카테고리 정답" 기준이다.
+
+즉, 예를 들어 정답이 ship 이면
+상위 결과의 category 가 ship 인지만 보고 점수를 계산한다.
 """
 
 from __future__ import annotations
@@ -33,6 +39,7 @@ from embedder import CLIPEmbedder
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
+# 카테고리별 테스트 문장
 TEST_QUERIES = [
     {"query": "구름을 뚫고 지나가는 날개 달린 거대한 기계", "expected": "airplane"},
     {"query": "a large metal vehicle with wings soaring high", "expected": "airplane"},
@@ -58,6 +65,11 @@ TEST_QUERIES = [
 
 
 def configure_matplotlib_font() -> None:
+    """
+    OS 별로 가능한 한글 폰트를 찾아 matplotlib 에 설정한다.
+
+    특정 OS 전용 폰트만 강제하지 않고 fallback 순서대로 찾는다.
+    """
     candidates = [
         "Malgun Gothic",
         "AppleGothic",
@@ -74,6 +86,11 @@ def configure_matplotlib_font() -> None:
 
 
 def precision_at_k(retrieved_categories: List[str], expected: str, k: int) -> float:
+    """
+    Precision@K 계산.
+
+    상위 K개 중 정답 카테고리가 몇 개인지 비율로 계산한다.
+    """
     top_k = retrieved_categories[:k]
     if not top_k:
         return 0.0
@@ -81,6 +98,12 @@ def precision_at_k(retrieved_categories: List[str], expected: str, k: int) -> fl
 
 
 def recall_at_k(retrieved_categories: List[str], expected: str, k: int, total_relevant: int) -> float:
+    """
+    Recall@K 계산.
+
+    데이터셋 안의 전체 정답 개수 중, 상위 K개 안에 몇 개가 들어왔는지 본다.
+    현재 데이터셋은 카테고리당 10장이므로 R@1 은 보통 0.1 단위로 움직인다.
+    """
     if total_relevant == 0:
         return 0.0
     top_k = retrieved_categories[:k]
@@ -88,6 +111,12 @@ def recall_at_k(retrieved_categories: List[str], expected: str, k: int, total_re
 
 
 def mrr(retrieved_categories: List[str], expected: str) -> float:
+    """
+    MRR 계산.
+
+    첫 정답이 몇 위에 나왔는지에 따라
+    1 / rank 값을 반환한다.
+    """
     for index, category in enumerate(retrieved_categories):
         if category == expected:
             return 1.0 / (index + 1)
@@ -95,6 +124,9 @@ def mrr(retrieved_categories: List[str], expected: str) -> float:
 
 
 def evaluate_mode(embedder: CLIPEmbedder, chroma_dir: str | Path, collection_name: str, mode_name: str) -> Dict:
+    """
+    특정 모드(full 또는 keyword)의 검색 성능을 계산한다.
+    """
     client = chromadb.PersistentClient(path=os.fspath(chroma_dir))
     try:
         collection = client.get_collection(name=collection_name)
@@ -129,12 +161,14 @@ def evaluate_mode(embedder: CLIPEmbedder, chroma_dir: str | Path, collection_nam
         "avg_mrr": 0,
     }
 
+    # 전체 정답 개수를 계산할 때 다시 쓰기 위해 메타데이터를 한 번 가져온다.
     collection_metadata = collection.get(include=["metadatas"])["metadatas"]
 
     for query_info in TEST_QUERIES:
         query = query_info["query"]
         expected = query_info["expected"]
 
+        # 질의 텍스트는 텍스트 임베딩으로 바꿔서 검색한다.
         query_vec = embedder.embed_text(query, translate=True).tolist()
         search_results = collection.query(
             query_embeddings=[query_vec],
@@ -142,6 +176,7 @@ def evaluate_mode(embedder: CLIPEmbedder, chroma_dir: str | Path, collection_nam
             include=["metadatas", "distances"],
         )
 
+        # 현재 평가는 "카테고리 비교"이므로 이미지 id 가 아니라 category 만 본다.
         retrieved_categories = [
             metadata.get("category", "") for metadata in search_results["metadatas"][0]
         ]
@@ -207,6 +242,7 @@ def evaluate_mode(embedder: CLIPEmbedder, chroma_dir: str | Path, collection_nam
 
 
 def save_csv(full_results: Dict, keyword_results: Dict, output_path: Path) -> None:
+    """행별 평가 결과와 평균 결과를 CSV 로 저장한다."""
     with open(output_path, "w", newline="", encoding="utf-8-sig") as file:
         writer = csv.writer(file)
         writer.writerow(
@@ -270,6 +306,7 @@ def save_csv(full_results: Dict, keyword_results: Dict, output_path: Path) -> No
 
 
 def save_chart(full_results: Dict, keyword_results: Dict, output_path: Path) -> None:
+    """비교용 막대 차트 2개를 생성한다."""
     metrics = ["Precision@1", "Precision@3", "Precision@5", "Precision@10", "MRR"]
     full_values = [
         full_results["avg_precision_1"],
@@ -290,6 +327,7 @@ def save_chart(full_results: Dict, keyword_results: Dict, output_path: Path) -> 
     width = 0.35
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
+    # 차트 1: 평균 지표 비교
     ax1 = axes[0]
     bars1 = ax1.bar(
         x - width / 2,
@@ -335,6 +373,7 @@ def save_chart(full_results: Dict, keyword_results: Dict, output_path: Path) -> 
             fontsize=9,
         )
 
+    # 차트 2: 카테고리별 P@1 평균 비교
     ax2 = axes[1]
     full_p1_by_category = {}
     keyword_p1_by_category = {}
@@ -385,6 +424,14 @@ def save_chart(full_results: Dict, keyword_results: Dict, output_path: Path) -> 
 
 
 def run_evaluation() -> dict:
+    """
+    평가 전체 흐름을 실행한다.
+
+    1. 폰트 설정
+    2. full 평가
+    3. keyword 평가
+    4. CSV / JSON / 차트 저장
+    """
     configure_matplotlib_font()
     EVAL_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -427,6 +474,7 @@ def run_evaluation() -> dict:
 
 
 def main() -> int:
+    """평가 CLI 진입점."""
     try:
         run_evaluation()
         return 0

@@ -1,5 +1,8 @@
 """
-Download a small STL-10 sample dataset into the app data directory.
+STL-10 샘플 다운로드 스크립트.
+
+전체 STL-10 데이터셋을 직접 서비스에 쓰는 것이 아니라,
+카테고리별 일부 이미지만 뽑아서 데모용 샘플 세트를 만든다.
 """
 
 from __future__ import annotations
@@ -14,6 +17,7 @@ from pathlib import Path
 from PIL import Image
 from torchvision.datasets import STL10
 
+# scripts 폴더에서 상위 프로젝트 모듈을 import 하기 위한 경로 추가
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from config import IMAGE_DIR, STL10_RAW_DIR  # noqa: E402
@@ -52,7 +56,12 @@ def download_stl10_sample(
     replace_existing: bool = False,
     backup_existing: bool = True,
 ) -> int:
-    """Download STL-10 and write a small class-balanced sample set."""
+    """
+    STL-10 을 다운로드하고 카테고리별 샘플 이미지를 만든다.
+
+    images_per_category 개수만큼만 뽑기 때문에
+    전체 raw 데이터보다 훨씬 작은 데모 세트를 만들 수 있다.
+    """
     image_dir = Path(image_dir)
     download_dir = Path(download_dir)
     download_dir.mkdir(parents=True, exist_ok=True)
@@ -83,6 +92,7 @@ def download_stl10_sample(
 
     dataset = STL10(root=str(download_dir), split="train", download=True)
 
+    # 각 라벨별 데이터셋 인덱스를 모아 둔다.
     class_indices = {i: [] for i in range(10)}
     for idx in range(len(dataset)):
         _, label = dataset[idx]
@@ -93,6 +103,7 @@ def download_stl10_sample(
         class_dir = image_dir / class_name
         class_dir.mkdir(parents=True, exist_ok=True)
 
+        # 고정 시드로 샘플을 뽑아서 결과가 매번 동일하게 나오도록 한다.
         random.seed(42)
         selected_indices = random.sample(
             class_indices[class_idx],
@@ -105,6 +116,8 @@ def download_stl10_sample(
             if not isinstance(image, Image.Image):
                 image = Image.fromarray(image)
 
+            # 일부는 jpg, 일부는 png, 일부는 webp 로 저장해서
+            # 포맷 다양성도 함께 테스트한다.
             if image_idx < 4:
                 ext, fmt = "jpg", "JPEG"
             elif image_idx < 7:
@@ -122,6 +135,7 @@ def download_stl10_sample(
 
 
 def main() -> int:
+    """다운로드 CLI 진입점."""
     parser = argparse.ArgumentParser(description="STL-10 샘플 데이터 다운로드")
     parser.add_argument(
         "--images-per-category",

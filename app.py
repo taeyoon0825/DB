@@ -1,7 +1,11 @@
 """
-Streamlit web UI for image search.
+Streamlit 기반 이미지 검색 UI.
 
-Run:
+이 파일은 "런타임 UI"만 담당한다.
+즉, 앱 화면을 그리고 검색을 수행하며, 데이터가 없을 때는
+자동으로 데이터를 만들지 않고 사용자에게 초기화 방법만 안내한다.
+
+실행:
     streamlit run app.py
 """
 
@@ -25,12 +29,14 @@ from config import (
     ensure_app_dirs,
 )
 
+# Streamlit 페이지 기본 설정
 st.set_page_config(
     page_title="이미지 벡터 검색",
     page_icon="🔍",
     layout="wide",
 )
 
+# 결과 카드에 쓰는 간단한 스타일
 st.markdown(
     """
 <style>
@@ -58,12 +64,29 @@ st.markdown(
 
 @st.cache_resource(show_spinner=False)
 def load_searcher(mode: str):
+    """
+    검색기 객체를 캐싱해서 재사용한다.
+
+    OpenCLIP 모델 로딩 비용이 있으므로, 같은 모드(full/keyword)에서는
+    매번 새 객체를 만들지 않도록 Streamlit 캐시를 사용한다.
+    """
     from searcher import ImageSearcher
 
     return ImageSearcher(mode=mode)
 
 
 def display_results(results, cols_per_row: int = 5) -> None:
+    """
+    검색 결과를 그리드 형태로 보여준다.
+
+    각 결과는:
+    - 이미지 미리보기
+    - 유사도
+    - 카테고리
+    - 파일명
+    - 실제 저장 경로
+    를 표시한다.
+    """
     if not results:
         st.warning("검색 결과가 없습니다.")
         return
@@ -98,6 +121,13 @@ def display_results(results, cols_per_row: int = 5) -> None:
 
 
 def _get_collection_status(path, collection_name: str):
+    """
+    Chroma 컬렉션 상태를 점검한다.
+
+    반환값:
+    - count: 현재 컬렉션에 저장된 벡터 수
+    - error: 준비되지 않았을 때 보여줄 메시지
+    """
     if not path.exists():
         return {"count": 0, "error": f"디렉터리가 없습니다: {path}"}
 
@@ -113,6 +143,14 @@ def _get_collection_status(path, collection_name: str):
 
 
 def get_runtime_state() -> dict:
+    """
+    앱 실행에 필요한 데이터가 준비됐는지 한 번에 확인한다.
+
+    여기서 확인하는 항목:
+    - full 검색용 Chroma DB
+    - keyword 검색용 Chroma DB
+    - 평가 차트 / CSV 파일 존재 여부
+    """
     full_status = _get_collection_status(CHROMA_FULL_DIR, COLLECTION_FULL)
     keyword_status = _get_collection_status(CHROMA_KEYWORD_DIR, COLLECTION_KEYWORD)
 
@@ -131,6 +169,11 @@ def get_runtime_state() -> dict:
 
 
 def render_sidebar(state: dict) -> tuple[str, int]:
+    """
+    좌측 사이드바를 그린다.
+
+    사용자가 여기서 검색 모드와 결과 개수를 선택한다.
+    """
     with st.sidebar:
         st.header("⚙️ 설정")
         search_mode = st.selectbox(
@@ -154,6 +197,12 @@ def render_sidebar(state: dict) -> tuple[str, int]:
 
 
 def render_not_ready(state: dict) -> None:
+    """
+    검색 데이터가 준비되지 않았을 때 사용자에게 안내 메시지를 보여준다.
+
+    중요한 점은 여기서 "자동 초기화"를 하지 않는다는 것이다.
+    앱은 UI만 담당하고, 초기화는 별도 스크립트가 담당한다.
+    """
     st.error("검색 데이터가 준비되지 않았습니다.")
     st.write("아래 명령으로 초기화를 먼저 실행하세요.")
     st.code("python initialize_data.py")
@@ -163,6 +212,15 @@ def render_not_ready(state: dict) -> None:
 
 
 def main() -> None:
+    """
+    앱 메인 진입점.
+
+    흐름:
+    1. 필요한 앱 디렉터리 생성
+    2. 런타임 상태 점검
+    3. 데이터가 없으면 안내 후 중단
+    4. 데이터가 있으면 텍스트 검색 / 이미지 검색 / 평가 결과 탭 표시
+    """
     ensure_app_dirs()
     state = get_runtime_state()
 
@@ -202,6 +260,7 @@ def main() -> None:
         st.subheader("이미지로 유사 이미지 검색")
         uploaded = st.file_uploader("이미지 업로드", type=["jpg", "jpeg", "png", "webp"])
         if uploaded:
+            # 업로드 이미지는 TEMP_DIR 아래 임시 파일로 저장한 뒤 검색에 사용한다.
             img = Image.open(uploaded).convert("RGB")
             TEMP_QUERY_IMAGE_PATH.parent.mkdir(parents=True, exist_ok=True)
             img.save(TEMP_QUERY_IMAGE_PATH)
@@ -214,7 +273,10 @@ def main() -> None:
                 try:
                     with st.spinner("검색 중..."):
                         searcher = load_searcher(search_mode)
-                        results = searcher.search_by_image(os.fspath(TEMP_QUERY_IMAGE_PATH), n_results=n_results)
+                        results = searcher.search_by_image(
+                            os.fspath(TEMP_QUERY_IMAGE_PATH),
+                            n_results=n_results,
+                        )
                     with col2:
                         st.success(f"유사 이미지 {len(results)}건 검색 완료")
                     display_results(results)

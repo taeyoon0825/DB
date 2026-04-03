@@ -1,4 +1,15 @@
-"""Explicit data initialization entrypoint for local/dev environments."""
+"""
+데이터 초기화용 엔트리포인트.
+
+이 파일은 앱 실행 전에 한 번 돌리는 용도다.
+역할은 아래와 같다.
+
+1. 샘플 이미지 다운로드
+2. Chroma 임베딩 생성
+3. 평가 결과 생성
+
+즉, app.py 와 달리 "데이터 준비 작업"만 담당한다.
+"""
 
 from __future__ import annotations
 
@@ -18,20 +29,21 @@ logger = logging.getLogger(__name__)
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Initialize demo data for the image search app.")
-    parser.add_argument("--skip-download", action="store_true", help="Skip STL-10 sample download.")
-    parser.add_argument("--skip-embed", action="store_true", help="Skip embedding build.")
-    parser.add_argument("--skip-evaluate", action="store_true", help="Skip evaluation.")
+    """초기화 CLI 진입점."""
+    parser = argparse.ArgumentParser(description="이미지 검색 앱용 데모 데이터 초기화")
+    parser.add_argument("--skip-download", action="store_true", help="STL-10 샘플 다운로드를 건너뜀")
+    parser.add_argument("--skip-embed", action="store_true", help="임베딩 생성을 건너뜀")
+    parser.add_argument("--skip-evaluate", action="store_true", help="평가 생성을 건너뜀")
     parser.add_argument(
         "--mode",
         choices=["full", "keyword", "both"],
         default="both",
-        help="Embedding mode when --skip-embed is not used.",
+        help="임베딩 생성 시 사용할 모드",
     )
     parser.add_argument(
         "--replace-existing-images",
         action="store_true",
-        help="Replace existing image samples when downloading.",
+        help="기존 샘플 이미지가 있으면 교체",
     )
     args = parser.parse_args()
 

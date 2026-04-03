@@ -1,7 +1,10 @@
 """
-Build ChromaDB collections from local images.
+임베딩 생성용 CLI.
 
-Usage:
+이 파일은 실제 이미지 데이터가 준비된 뒤
+full / keyword Chroma 컬렉션을 만드는 역할을 한다.
+
+사용 예시:
     python embed_all.py --mode full
     python embed_all.py --mode keyword
     python embed_all.py --mode both
@@ -17,7 +20,11 @@ from embedder import CLIPEmbedder, embed_full, embed_keyword, scan_images
 
 
 def build_embeddings(mode: str = "both") -> dict[str, int]:
-    """Build one or both embedding collections and return indexed counts."""
+    """
+    선택한 모드에 따라 임베딩을 생성한다.
+
+    반환값은 각 컬렉션에 몇 개가 들어갔는지 알려주는 요약 딕셔너리다.
+    """
     image_files = scan_images(IMAGE_DIR)
     print(f"이미지 스캔 중: {IMAGE_DIR}")
     print(f"발견된 이미지: {len(image_files)}장")
@@ -27,6 +34,7 @@ def build_embeddings(mode: str = "both") -> dict[str, int]:
             f"이미지가 없습니다. 먼저 데이터를 준비하세요. 현재 경로: {IMAGE_DIR}"
         )
 
+    # 카테고리별 이미지 수를 같이 출력해서 데이터가 제대로 준비됐는지 확인한다.
     from collections import Counter
 
     cat_counts = Counter(file_info["category"] for file_info in image_files)
@@ -49,6 +57,7 @@ def build_embeddings(mode: str = "both") -> dict[str, int]:
 
 
 def main() -> int:
+    """CLI 진입점."""
     parser = argparse.ArgumentParser(description="이미지 DB 임베딩")
     parser.add_argument(
         "--mode",

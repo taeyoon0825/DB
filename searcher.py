@@ -1,9 +1,11 @@
 """
-Image search module.
+검색 엔진 로직.
 
-Supports:
-- text -> image search
-- image -> similar image search
+이 파일은 다음 두 가지 검색을 담당한다.
+- 텍스트 -> 이미지 검색
+- 이미지 -> 유사 이미지 검색
+
+실제 검색은 ChromaDB 에 저장된 벡터를 조회해서 수행한다.
 """
 
 from __future__ import annotations
@@ -24,7 +26,7 @@ from embedder import CLIPEmbedder
 
 
 class ImageSearcher:
-    """Search engine backed by ChromaDB and OpenCLIP."""
+    """ChromaDB + OpenCLIP 기반 검색기."""
 
     def __init__(self, mode: str = "full") -> None:
         if mode not in {"full", "keyword"}:
@@ -32,6 +34,7 @@ class ImageSearcher:
 
         self.mode = mode
 
+        # full / keyword 모드에 따라 사용할 Chroma 컬렉션을 결정한다.
         if mode == "full":
             chroma_dir = CHROMA_FULL_DIR
             collection_name = COLLECTION_FULL
@@ -55,11 +58,12 @@ class ImageSearcher:
                 "먼저 `python initialize_data.py` 를 실행하세요."
             )
 
+        # DB가 준비된 뒤에만 모델을 로딩한다.
         self.embedder = CLIPEmbedder()
         print(f"검색 DB 로딩: {mode} ({self.collection_count}개 인덱싱)")
 
     def search_by_text(self, query: str, n_results: int = 10) -> List[Dict]:
-        """Search images using a text query."""
+        """텍스트 쿼리를 임베딩한 뒤 유사한 이미지를 검색한다."""
         query = query.strip()
         if not query:
             raise ValueError("빈 검색어는 사용할 수 없습니다.")
@@ -73,7 +77,7 @@ class ImageSearcher:
         return self._format_results(results)
 
     def search_by_image(self, image_path: str, n_results: int = 10) -> List[Dict]:
-        """Search similar images using an input image."""
+        """입력 이미지를 임베딩한 뒤 유사한 이미지를 검색한다."""
         query_vec = self.embedder.embed_image(image_path).tolist()
         results = self.collection.query(
             query_embeddings=[query_vec],
@@ -83,6 +87,11 @@ class ImageSearcher:
         return self._format_results(results)
 
     def _format_results(self, results) -> List[Dict]:
+        """
+        Chroma 반환 결과를 UI/CLI 에서 쓰기 쉬운 형태로 정리한다.
+
+        cosine distance 를 similarity 로 바꿔서 같이 넣는다.
+        """
         formatted: List[Dict] = []
         if not results["ids"][0]:
             return formatted
@@ -108,6 +117,7 @@ class ImageSearcher:
 
 
 def print_results(results: List[Dict], title: str = "검색 결과") -> None:
+    """CLI 환경에서 검색 결과를 보기 좋게 출력한다."""
     print(f"\n{'=' * 60}")
     print(f" {title}")
     print(f"{'=' * 60}")
@@ -126,6 +136,7 @@ def print_results(results: List[Dict], title: str = "검색 결과") -> None:
 
 
 def main() -> int:
+    """검색 CLI 진입점."""
     parser = argparse.ArgumentParser(description="이미지 검색")
     parser.add_argument("--query", type=str, help="텍스트 검색 쿼리")
     parser.add_argument("--image", type=str, help="유사 이미지 검색용 이미지 경로")
