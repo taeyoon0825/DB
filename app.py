@@ -95,12 +95,15 @@ def display_results(results, cols_per_row=5):
 def main():
     import sys
     import subprocess
-    if not os.path.exists(CHROMA_FULL_DIR) or not os.path.exists(IMAGE_DIR):
-        with st.spinner("서버 최초 세팅 중... 더미 이미지 및 검색용 벡터 DB를 생성합니다. (약 1~2분 소요)"):
+    chart_path = os.path.join(BASE_DIR, "evaluation_results", "comparison_chart.png")
+    
+    if not os.path.exists(CHROMA_FULL_DIR) or not os.path.exists(chart_path):
+        with st.spinner("서버 최초 세팅 중... 데이터 세팅 및 차트를 생성합니다. (약 2~3분 소요)"):
             try:
                 subprocess.run([sys.executable, "scripts/download_stl10.py"], check=False)
                 subprocess.run([sys.executable, "embed_all.py", "--mode", "both"], check=False)
-                st.success("초기 데모 데이터 세팅 완료!")
+                subprocess.run([sys.executable, "evaluate.py"], check=False)
+                st.success("초기 데모 데이터 및 평가 결과 자동 세팅 완료!")
             except Exception as e:
                 st.error(f"데이터 생성 실패: {e}")
 
