@@ -32,12 +32,27 @@ env.bak/
 venv.bak/
 
 # Project Specific Data & Database
+app_data/
+logs/
 chroma_full/
 chroma_keyword/
 _stl10_raw/
 이미지/
 이미지_backup_dummy/
 evaluation_results/
+temp_query_image.jpg
+data/*
+!data/images/
+!data/images/**
+!data/chroma_full/
+!data/chroma_full/**
+!data/chroma_keyword/
+!data/chroma_keyword/**
+!data/evaluation/
+!data/evaluation/**
+data/_stl10_raw/
+data/tmp/
+data/logs/
 
 # Editor / OS
 .vscode/

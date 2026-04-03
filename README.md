@@ -1,42 +1,135 @@
-# 멀티모달 벡터 검색 시스템 (Multi-Modal Vector Search)
+# 멀티모달 이미지 검색 데모
 
-이 프로젝트는 오픈 소스 모델(OpenCLIP)과 벡터 데이터베이스(ChromaDB)를 활용한 멀티모달 이미지 검색 시스템입니다. 사용자는 이미지를 통해 유사한 이미지를 찾거나, 텍스트 키워드를 입력하여 관련 이미지를 검색할 수 있습니다. 
+OpenCLIP + ChromaDB + Streamlit 기반 이미지 검색 데모입니다.
 
-## 🚀 주요 기능
-- **Full Image Embedding 모드:** 원본 이미지 전체를 인코딩하여 전체적인 분위기나 구성 요소가 유사한 이미지를 검색
-- **Keyword Embedding 모드:** 이미지의 주요 키워드 특성을 기반으로 인코딩하여 검색 정확도 테스트 및 비교
-- **성능 평가 (Evaluate):** Precision@K, MRR 등의 지표를 사용해 두 가지 임베딩 모드의 검색 품질을 정량적으로 평가
-- **웹 UI (Streamlit):** 검색 시스템을 시각적으로 테스트할 수 있는 직관적인 인터페이스
+기능:
+- 텍스트 -> 이미지 검색
+- 이미지 -> 유사 이미지 검색
+- 전체 임베딩 vs 키워드 임베딩 비교 평가
 
-## 📂 주요 파일 구성
-- `app.py`: Streamlit으로 구동되는 웹 애플리케이션 (검색 UI)
-- `embedder.py` / `embed_all.py`: STL-10 이미지 데이터셋을 불러와 OpenCLIP으로 임베딩 구조화 후 ChromaDB에 저장하는 스크립트
-- `searcher.py`: 저장된 벡터 DB를 기반으로 쿼리(이미지/텍스트) 검색을 수행
-- `evaluate.py`: 검색 모듈의 성능을 평가하고 결과를 분석
-- `config.py`: 프로젝트 전반의 환경 변수 및 설정 값 관리
+이 프로젝트는 앱 런타임과 데이터 초기화를 분리했습니다.
+- 앱 실행: 검색 UI만 담당
+- 데이터 초기화: `initialize_data.py`
 
-## 💻 설치 및 환경 설정
+## 요구 사항
 
-**1. 터미널에서 필수 패키지를 설치합니다.**
+- Python 3.11 권장
+- 전역 Python 대신 가상환경 사용 권장
+- 운영 환경에서는 쓰기 가능한 데이터 디렉터리 필요
+
+## 1. 가상환경 생성
+
+### Windows PowerShell
+```powershell
+py -3.11 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+```
+
+### macOS / Linux
+```bash
+python3.11 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+```
+
+## 2. 의존성 설치
+
 ```bash
 pip install -r requirements.txt
 ```
 
-**2. 이미지 데이터 벡터화 (Vector DB 생성)**
-- 모델이 이미지를 학습할 수 있도록 임베딩하여 ChromaDB에 저장합니다. (수 분 가량 소요될 수 있습니다)
+개발 도구까지 설치하려면:
+
 ```bash
-python embed_all.py
+pip install -r requirements-dev.txt
 ```
 
-**3. 웹 UI 서버 실행**
-- 로컬 웹 브라우저에서 검색기를 테스트해보려면 아래의 명령어를 입력하세요.
+## 3. 데이터 초기화
+
+앱 실행 전에 한 번만 수행하면 됩니다.
+
+```bash
+python initialize_data.py
+```
+
+옵션:
+
+```bash
+python initialize_data.py --skip-download
+python initialize_data.py --skip-evaluate
+python initialize_data.py --mode full
+python initialize_data.py --replace-existing-images
+```
+
+## 4. 앱 실행
+
 ```bash
 streamlit run app.py
 ```
 
-## 🛠 기술 스택
-- Python 3.10+
-- OpenCLIP
-- ChromaDB
-- Pytorch
-- Streamlit
+데이터가 준비되지 않았으면 앱이 조용히 실패하지 않고 초기화 명령을 안내합니다.
+
+## 5. 환경변수
+
+기본적으로 프로젝트 내부 `./data` 경로를 사용합니다.
+
+- `APP_DATA_DIR`
+- `IMAGE_DIR`
+- `CHROMA_FULL_DIR`
+- `CHROMA_KEYWORD_DIR`
+- `EVAL_DIR`
+- `TEMP_DIR`
+- `STL10_RAW_DIR`
+- `LOG_DIR`
+- `ENABLE_QUERY_TRANSLATION`
+- `CLIP_MODEL_NAME`
+- `CLIP_PRETRAINED`
+
+예시:
+
+### Windows PowerShell
+```powershell
+$env:APP_DATA_DIR="D:\image-search-data"
+```
+
+### macOS / Linux
+```bash
+export APP_DATA_DIR=/srv/image-search-data
+```
+
+## 6. Docker
+
+초기 데이터 생성:
+
+```bash
+docker compose run --rm init-data
+```
+
+앱 실행:
+
+```bash
+docker compose up app
+```
+
+기본 볼륨:
+
+- 호스트 `./app_data`
+- 컨테이너 `/data`
+
+## 7. 주요 파일
+
+- `app.py`: Streamlit UI
+- `config.py`: 환경변수 기반 경로/상수 설정
+- `initialize_data.py`: 다운로드/임베딩/평가 초기화
+- `embed_all.py`: ChromaDB 임베딩 생성
+- `embedder.py`: OpenCLIP 임베딩 로직
+- `searcher.py`: 검색 엔진
+- `evaluate.py`: Precision/Recall/MRR 평가
+- `scripts/download_stl10.py`: STL-10 샘플 다운로드
+
+## 8. 배포 시 주의
+
+- `initialize_data.py` 는 앱과 분리해서 실행하세요.
+- 앱 컨테이너/서버는 쓰기 가능한 `TEMP_DIR` 과 읽기 가능한 데이터 경로가 필요합니다.
+- 번역 기능은 외부 네트워크에 의존할 수 있으므로, 제한된 환경에서는 `ENABLE_QUERY_TRANSLATION=false` 로 비활성화할 수 있습니다.

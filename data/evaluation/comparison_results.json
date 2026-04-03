@@ -1,0 +1,830 @@
+{
+  "full": {
+    "mode": "전체 임베딩 (Full)",
+    "queries": [
+      {
+        "query": "구름을 뚫고 지나가는 날개 달린 거대한 기계",
+        "expected": "airplane",
+        "top5_retrieved": [
+          "airplane",
+          "airplane",
+          "airplane",
+          "truck",
+          "airplane"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 0.8,
+        "precision@10": 0.7,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.4,
+        "recall@10": 0.7,
+        "mrr": 1.0
+      },
+      {
+        "query": "a large metal vehicle with wings soaring high",
+        "expected": "airplane",
+        "top5_retrieved": [
+          "airplane",
+          "airplane",
+          "airplane",
+          "airplane",
+          "truck"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 0.8,
+        "precision@10": 0.7,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.4,
+        "recall@10": 0.7,
+        "mrr": 1.0
+      },
+      {
+        "query": "작고 깃털이 있으며 나뭇가지에 앉아 지저귀는 동물",
+        "expected": "bird",
+        "top5_retrieved": [
+          "bird",
+          "monkey",
+          "bird",
+          "bird",
+          "bird"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 0.6666666666666666,
+        "precision@5": 0.8,
+        "precision@10": 0.8,
+        "recall@1": 0.1,
+        "recall@3": 0.2,
+        "recall@5": 0.4,
+        "recall@10": 0.8,
+        "mrr": 1.0
+      },
+      {
+        "query": "a small creature with colorful feathers resting on a branch",
+        "expected": "bird",
+        "top5_retrieved": [
+          "monkey",
+          "bird",
+          "bird",
+          "bird",
+          "bird"
+        ],
+        "precision@1": 0.0,
+        "precision@3": 0.6666666666666666,
+        "precision@5": 0.8,
+        "precision@10": 0.7,
+        "recall@1": 0.0,
+        "recall@3": 0.2,
+        "recall@5": 0.4,
+        "recall@10": 0.7,
+        "mrr": 0.5
+      },
+      {
+        "query": "도로 위를 빠르게 주행하는 바퀴가 4개 달린 교통수단",
+        "expected": "car",
+        "top5_retrieved": [
+          "car",
+          "truck",
+          "horse",
+          "truck",
+          "truck"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "precision@10": 0.3,
+        "recall@1": 0.1,
+        "recall@3": 0.1,
+        "recall@5": 0.1,
+        "recall@10": 0.3,
+        "mrr": 1.0
+      },
+      {
+        "query": "a four-wheeled vehicle traveling fast on the street",
+        "expected": "car",
+        "top5_retrieved": [
+          "car",
+          "truck",
+          "car",
+          "car",
+          "car"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 0.6666666666666666,
+        "precision@5": 0.8,
+        "precision@10": 0.4,
+        "recall@1": 0.1,
+        "recall@3": 0.2,
+        "recall@5": 0.4,
+        "recall@10": 0.4,
+        "mrr": 1.0
+      },
+      {
+        "query": "수염이 길고 유연하며 꼬리가 긴 애완동물",
+        "expected": "cat",
+        "top5_retrieved": [
+          "cat",
+          "monkey",
+          "monkey",
+          "cat",
+          "monkey"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.4,
+        "precision@10": 0.3,
+        "recall@1": 0.1,
+        "recall@3": 0.1,
+        "recall@5": 0.2,
+        "recall@10": 0.3,
+        "mrr": 1.0
+      },
+      {
+        "query": "a flexible furry animal with long whiskers and sharp eyes",
+        "expected": "cat",
+        "top5_retrieved": [
+          "monkey",
+          "cat",
+          "monkey",
+          "monkey",
+          "cat"
+        ],
+        "precision@1": 0.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.4,
+        "precision@10": 0.3,
+        "recall@1": 0.0,
+        "recall@3": 0.1,
+        "recall@5": 0.2,
+        "recall@10": 0.3,
+        "mrr": 0.5
+      },
+      {
+        "query": "머리에 나뭇가지처럼 멋진 뿔이 나 있는 숲 속의 포유류",
+        "expected": "deer",
+        "top5_retrieved": [
+          "deer",
+          "deer",
+          "monkey",
+          "deer",
+          "deer"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 0.6666666666666666,
+        "precision@5": 0.8,
+        "precision@10": 0.6,
+        "recall@1": 0.1,
+        "recall@3": 0.2,
+        "recall@5": 0.4,
+        "recall@10": 0.6,
+        "mrr": 1.0
+      },
+      {
+        "query": "a woodland creature with elegant antlers on its head",
+        "expected": "deer",
+        "top5_retrieved": [
+          "deer",
+          "deer",
+          "deer",
+          "deer",
+          "deer"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 0.9,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 0.9,
+        "mrr": 1.0
+      },
+      {
+        "query": "사람을 잘 따르고 털이 북실북실하며 꼬리를 흔드는 반려동물",
+        "expected": "dog",
+        "top5_retrieved": [
+          "cat",
+          "dog",
+          "cat",
+          "dog",
+          "monkey"
+        ],
+        "precision@1": 0.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.4,
+        "precision@10": 0.5,
+        "recall@1": 0.0,
+        "recall@3": 0.1,
+        "recall@5": 0.2,
+        "recall@10": 0.5,
+        "mrr": 0.5
+      },
+      {
+        "query": "a loyal furry pet with an excitedly wagging tail",
+        "expected": "dog",
+        "top5_retrieved": [
+          "cat",
+          "dog",
+          "cat",
+          "dog",
+          "dog"
+        ],
+        "precision@1": 0.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.6,
+        "precision@10": 0.5,
+        "recall@1": 0.0,
+        "recall@3": 0.1,
+        "recall@5": 0.3,
+        "recall@10": 0.5,
+        "mrr": 0.5
+      },
+      {
+        "query": "갈기가 휘날리는 빠르고 튼튼한 초식 동물",
+        "expected": "horse",
+        "top5_retrieved": [
+          "monkey",
+          "cat",
+          "horse",
+          "monkey",
+          "deer"
+        ],
+        "precision@1": 0.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "precision@10": 0.4,
+        "recall@1": 0.0,
+        "recall@3": 0.1,
+        "recall@5": 0.1,
+        "recall@10": 0.4,
+        "mrr": 0.3333333333333333
+      },
+      {
+        "query": "a strong grazing animal with a majestic mane running fast",
+        "expected": "horse",
+        "top5_retrieved": [
+          "dog",
+          "dog",
+          "dog",
+          "deer",
+          "horse"
+        ],
+        "precision@1": 0.0,
+        "precision@3": 0.0,
+        "precision@5": 0.2,
+        "precision@10": 0.3,
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.1,
+        "recall@10": 0.3,
+        "mrr": 0.2
+      },
+      {
+        "query": "긴 팔로 나무 사이를 유연하게 옮겨 다니는 영장류",
+        "expected": "monkey",
+        "top5_retrieved": [
+          "monkey",
+          "monkey",
+          "monkey",
+          "monkey",
+          "monkey"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 0.9,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 0.9,
+        "mrr": 1.0
+      },
+      {
+        "query": "a witty primate with long arms swinging through branches",
+        "expected": "monkey",
+        "top5_retrieved": [
+          "monkey",
+          "monkey",
+          "monkey",
+          "monkey",
+          "monkey"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 0.8,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 0.8,
+        "mrr": 1.0
+      },
+      {
+        "query": "하얀 물살을 가르며 바다를 항해하는 거대한 구조물",
+        "expected": "ship",
+        "top5_retrieved": [
+          "ship",
+          "ship",
+          "ship",
+          "ship",
+          "ship"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 0.9,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 0.9,
+        "mrr": 1.0
+      },
+      {
+        "query": "a massive floating vessel cutting through the ocean waves",
+        "expected": "ship",
+        "top5_retrieved": [
+          "ship",
+          "ship",
+          "ship",
+          "ship",
+          "ship"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 0.9,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 0.9,
+        "mrr": 1.0
+      },
+      {
+        "query": "무거운 화물을 가득 싣고 화물칸이 달린 대형 차량",
+        "expected": "truck",
+        "top5_retrieved": [
+          "truck",
+          "truck",
+          "airplane",
+          "truck",
+          "ship"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 0.6666666666666666,
+        "precision@5": 0.6,
+        "precision@10": 0.6,
+        "recall@1": 0.1,
+        "recall@3": 0.2,
+        "recall@5": 0.3,
+        "recall@10": 0.6,
+        "mrr": 1.0
+      },
+      {
+        "query": "a heavy-duty commercial vehicle designed to carry large cargo",
+        "expected": "truck",
+        "top5_retrieved": [
+          "truck",
+          "truck",
+          "truck",
+          "truck",
+          "truck"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 0.8,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 0.8,
+        "mrr": 1.0
+      }
+    ],
+    "avg_precision_1": 0.7,
+    "avg_precision_3": 0.6666666666666666,
+    "avg_precision_5": 0.6900000000000001,
+    "avg_precision_10": 0.615,
+    "avg_recall_1": 0.07,
+    "avg_recall_3": 0.2,
+    "avg_recall_5": 0.34500000000000003,
+    "avg_recall_10": 0.615,
+    "avg_mrr": 0.8266666666666668
+  },
+  "keyword": {
+    "mode": "키워드 임베딩 (Keyword)",
+    "queries": [
+      {
+        "query": "구름을 뚫고 지나가는 날개 달린 거대한 기계",
+        "expected": "airplane",
+        "top5_retrieved": [
+          "airplane",
+          "airplane",
+          "airplane",
+          "airplane",
+          "airplane"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "a large metal vehicle with wings soaring high",
+        "expected": "airplane",
+        "top5_retrieved": [
+          "airplane",
+          "airplane",
+          "airplane",
+          "airplane",
+          "airplane"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "작고 깃털이 있으며 나뭇가지에 앉아 지저귀는 동물",
+        "expected": "bird",
+        "top5_retrieved": [
+          "bird",
+          "bird",
+          "bird",
+          "bird",
+          "bird"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "a small creature with colorful feathers resting on a branch",
+        "expected": "bird",
+        "top5_retrieved": [
+          "bird",
+          "bird",
+          "bird",
+          "bird",
+          "bird"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "도로 위를 빠르게 주행하는 바퀴가 4개 달린 교통수단",
+        "expected": "car",
+        "top5_retrieved": [
+          "truck",
+          "truck",
+          "car",
+          "truck",
+          "truck"
+        ],
+        "precision@1": 0.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "precision@10": 0.2,
+        "recall@1": 0.0,
+        "recall@3": 0.1,
+        "recall@5": 0.1,
+        "recall@10": 0.2,
+        "mrr": 0.3333333333333333
+      },
+      {
+        "query": "a four-wheeled vehicle traveling fast on the street",
+        "expected": "car",
+        "top5_retrieved": [
+          "car",
+          "car",
+          "car",
+          "car",
+          "car"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "수염이 길고 유연하며 꼬리가 긴 애완동물",
+        "expected": "cat",
+        "top5_retrieved": [
+          "bird",
+          "bird",
+          "bird",
+          "bird",
+          "bird"
+        ],
+        "precision@1": 0.0,
+        "precision@3": 0.0,
+        "precision@5": 0.0,
+        "precision@10": 0.1,
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.1,
+        "mrr": 0.1
+      },
+      {
+        "query": "a flexible furry animal with long whiskers and sharp eyes",
+        "expected": "cat",
+        "top5_retrieved": [
+          "cat",
+          "bird",
+          "bird",
+          "bird",
+          "bird"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "precision@10": 0.1,
+        "recall@1": 0.1,
+        "recall@3": 0.1,
+        "recall@5": 0.1,
+        "recall@10": 0.1,
+        "mrr": 1.0
+      },
+      {
+        "query": "머리에 나뭇가지처럼 멋진 뿔이 나 있는 숲 속의 포유류",
+        "expected": "deer",
+        "top5_retrieved": [
+          "deer",
+          "deer",
+          "deer",
+          "deer",
+          "deer"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "a woodland creature with elegant antlers on its head",
+        "expected": "deer",
+        "top5_retrieved": [
+          "deer",
+          "deer",
+          "deer",
+          "deer",
+          "deer"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "사람을 잘 따르고 털이 북실북실하며 꼬리를 흔드는 반려동물",
+        "expected": "dog",
+        "top5_retrieved": [
+          "cat",
+          "cat",
+          "cat",
+          "cat",
+          "cat"
+        ],
+        "precision@1": 0.0,
+        "precision@3": 0.0,
+        "precision@5": 0.0,
+        "precision@10": 0.0,
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr": 0.0
+      },
+      {
+        "query": "a loyal furry pet with an excitedly wagging tail",
+        "expected": "dog",
+        "top5_retrieved": [
+          "cat",
+          "cat",
+          "cat",
+          "cat",
+          "cat"
+        ],
+        "precision@1": 0.0,
+        "precision@3": 0.0,
+        "precision@5": 0.0,
+        "precision@10": 0.0,
+        "recall@1": 0.0,
+        "recall@3": 0.0,
+        "recall@5": 0.0,
+        "recall@10": 0.0,
+        "mrr": 0.09090909090909091
+      },
+      {
+        "query": "갈기가 휘날리는 빠르고 튼튼한 초식 동물",
+        "expected": "horse",
+        "top5_retrieved": [
+          "horse",
+          "bird",
+          "bird",
+          "bird",
+          "bird"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 0.3333333333333333,
+        "precision@5": 0.2,
+        "precision@10": 0.1,
+        "recall@1": 0.1,
+        "recall@3": 0.1,
+        "recall@5": 0.1,
+        "recall@10": 0.1,
+        "mrr": 1.0
+      },
+      {
+        "query": "a strong grazing animal with a majestic mane running fast",
+        "expected": "horse",
+        "top5_retrieved": [
+          "horse",
+          "horse",
+          "horse",
+          "horse",
+          "horse"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "긴 팔로 나무 사이를 유연하게 옮겨 다니는 영장류",
+        "expected": "monkey",
+        "top5_retrieved": [
+          "monkey",
+          "monkey",
+          "monkey",
+          "monkey",
+          "monkey"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "a witty primate with long arms swinging through branches",
+        "expected": "monkey",
+        "top5_retrieved": [
+          "monkey",
+          "monkey",
+          "monkey",
+          "monkey",
+          "monkey"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "하얀 물살을 가르며 바다를 항해하는 거대한 구조물",
+        "expected": "ship",
+        "top5_retrieved": [
+          "ship",
+          "ship",
+          "ship",
+          "ship",
+          "ship"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "a massive floating vessel cutting through the ocean waves",
+        "expected": "ship",
+        "top5_retrieved": [
+          "ship",
+          "ship",
+          "ship",
+          "ship",
+          "ship"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "무거운 화물을 가득 싣고 화물칸이 달린 대형 차량",
+        "expected": "truck",
+        "top5_retrieved": [
+          "truck",
+          "truck",
+          "truck",
+          "truck",
+          "truck"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      },
+      {
+        "query": "a heavy-duty commercial vehicle designed to carry large cargo",
+        "expected": "truck",
+        "top5_retrieved": [
+          "truck",
+          "truck",
+          "truck",
+          "truck",
+          "truck"
+        ],
+        "precision@1": 1.0,
+        "precision@3": 1.0,
+        "precision@5": 1.0,
+        "precision@10": 1.0,
+        "recall@1": 0.1,
+        "recall@3": 0.3,
+        "recall@5": 0.5,
+        "recall@10": 1.0,
+        "mrr": 1.0
+      }
+    ],
+    "avg_precision_1": 0.8,
+    "avg_precision_3": 0.75,
+    "avg_precision_5": 0.73,
+    "avg_precision_10": 0.725,
+    "avg_recall_1": 0.08,
+    "avg_recall_3": 0.225,
+    "avg_recall_5": 0.365,
+    "avg_recall_10": 0.725,
+    "avg_mrr": 0.8262121212121212
+  }
+}

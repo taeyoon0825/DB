@@ -1,0 +1,43 @@
+﻿모드,쿼리,정답 카테고리,Top5 결과,P@1,P@3,P@5,P@10,R@1,R@3,R@5,R@10,MRR
+전체 임베딩 (Full),구름을 뚫고 지나가는 날개 달린 거대한 기계,airplane,"['airplane', 'airplane', 'airplane', 'truck', 'airplane']",1.000,1.000,0.800,0.700,0.100,0.300,0.400,0.700,1.000
+전체 임베딩 (Full),a large metal vehicle with wings soaring high,airplane,"['airplane', 'airplane', 'airplane', 'airplane', 'truck']",1.000,1.000,0.800,0.700,0.100,0.300,0.400,0.700,1.000
+전체 임베딩 (Full),작고 깃털이 있으며 나뭇가지에 앉아 지저귀는 동물,bird,"['bird', 'monkey', 'bird', 'bird', 'bird']",1.000,0.667,0.800,0.800,0.100,0.200,0.400,0.800,1.000
+전체 임베딩 (Full),a small creature with colorful feathers resting on a branch,bird,"['monkey', 'bird', 'bird', 'bird', 'bird']",0.000,0.667,0.800,0.700,0.000,0.200,0.400,0.700,0.500
+전체 임베딩 (Full),도로 위를 빠르게 주행하는 바퀴가 4개 달린 교통수단,car,"['car', 'truck', 'horse', 'truck', 'truck']",1.000,0.333,0.200,0.300,0.100,0.100,0.100,0.300,1.000
+전체 임베딩 (Full),a four-wheeled vehicle traveling fast on the street,car,"['car', 'truck', 'car', 'car', 'car']",1.000,0.667,0.800,0.400,0.100,0.200,0.400,0.400,1.000
+전체 임베딩 (Full),수염이 길고 유연하며 꼬리가 긴 애완동물,cat,"['cat', 'monkey', 'monkey', 'cat', 'monkey']",1.000,0.333,0.400,0.300,0.100,0.100,0.200,0.300,1.000
+전체 임베딩 (Full),a flexible furry animal with long whiskers and sharp eyes,cat,"['monkey', 'cat', 'monkey', 'monkey', 'cat']",0.000,0.333,0.400,0.300,0.000,0.100,0.200,0.300,0.500
+전체 임베딩 (Full),머리에 나뭇가지처럼 멋진 뿔이 나 있는 숲 속의 포유류,deer,"['deer', 'deer', 'monkey', 'deer', 'deer']",1.000,0.667,0.800,0.600,0.100,0.200,0.400,0.600,1.000
+전체 임베딩 (Full),a woodland creature with elegant antlers on its head,deer,"['deer', 'deer', 'deer', 'deer', 'deer']",1.000,1.000,1.000,0.900,0.100,0.300,0.500,0.900,1.000
+전체 임베딩 (Full),사람을 잘 따르고 털이 북실북실하며 꼬리를 흔드는 반려동물,dog,"['cat', 'dog', 'cat', 'dog', 'monkey']",0.000,0.333,0.400,0.500,0.000,0.100,0.200,0.500,0.500
+전체 임베딩 (Full),a loyal furry pet with an excitedly wagging tail,dog,"['cat', 'dog', 'cat', 'dog', 'dog']",0.000,0.333,0.600,0.500,0.000,0.100,0.300,0.500,0.500
+전체 임베딩 (Full),갈기가 휘날리는 빠르고 튼튼한 초식 동물,horse,"['monkey', 'cat', 'horse', 'monkey', 'deer']",0.000,0.333,0.200,0.400,0.000,0.100,0.100,0.400,0.333
+전체 임베딩 (Full),a strong grazing animal with a majestic mane running fast,horse,"['dog', 'dog', 'dog', 'deer', 'horse']",0.000,0.000,0.200,0.300,0.000,0.000,0.100,0.300,0.200
+전체 임베딩 (Full),긴 팔로 나무 사이를 유연하게 옮겨 다니는 영장류,monkey,"['monkey', 'monkey', 'monkey', 'monkey', 'monkey']",1.000,1.000,1.000,0.900,0.100,0.300,0.500,0.900,1.000
+전체 임베딩 (Full),a witty primate with long arms swinging through branches,monkey,"['monkey', 'monkey', 'monkey', 'monkey', 'monkey']",1.000,1.000,1.000,0.800,0.100,0.300,0.500,0.800,1.000
+전체 임베딩 (Full),하얀 물살을 가르며 바다를 항해하는 거대한 구조물,ship,"['ship', 'ship', 'ship', 'ship', 'ship']",1.000,1.000,1.000,0.900,0.100,0.300,0.500,0.900,1.000
+전체 임베딩 (Full),a massive floating vessel cutting through the ocean waves,ship,"['ship', 'ship', 'ship', 'ship', 'ship']",1.000,1.000,1.000,0.900,0.100,0.300,0.500,0.900,1.000
+전체 임베딩 (Full),무거운 화물을 가득 싣고 화물칸이 달린 대형 차량,truck,"['truck', 'truck', 'airplane', 'truck', 'ship']",1.000,0.667,0.600,0.600,0.100,0.200,0.300,0.600,1.000
+전체 임베딩 (Full),a heavy-duty commercial vehicle designed to carry large cargo,truck,"['truck', 'truck', 'truck', 'truck', 'truck']",1.000,1.000,1.000,0.800,0.100,0.300,0.500,0.800,1.000
+키워드 임베딩 (Keyword),구름을 뚫고 지나가는 날개 달린 거대한 기계,airplane,"['airplane', 'airplane', 'airplane', 'airplane', 'airplane']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),a large metal vehicle with wings soaring high,airplane,"['airplane', 'airplane', 'airplane', 'airplane', 'airplane']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),작고 깃털이 있으며 나뭇가지에 앉아 지저귀는 동물,bird,"['bird', 'bird', 'bird', 'bird', 'bird']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),a small creature with colorful feathers resting on a branch,bird,"['bird', 'bird', 'bird', 'bird', 'bird']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),도로 위를 빠르게 주행하는 바퀴가 4개 달린 교통수단,car,"['truck', 'truck', 'car', 'truck', 'truck']",0.000,0.333,0.200,0.200,0.000,0.100,0.100,0.200,0.333
+키워드 임베딩 (Keyword),a four-wheeled vehicle traveling fast on the street,car,"['car', 'car', 'car', 'car', 'car']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),수염이 길고 유연하며 꼬리가 긴 애완동물,cat,"['bird', 'bird', 'bird', 'bird', 'bird']",0.000,0.000,0.000,0.100,0.000,0.000,0.000,0.100,0.100
+키워드 임베딩 (Keyword),a flexible furry animal with long whiskers and sharp eyes,cat,"['cat', 'bird', 'bird', 'bird', 'bird']",1.000,0.333,0.200,0.100,0.100,0.100,0.100,0.100,1.000
+키워드 임베딩 (Keyword),머리에 나뭇가지처럼 멋진 뿔이 나 있는 숲 속의 포유류,deer,"['deer', 'deer', 'deer', 'deer', 'deer']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),a woodland creature with elegant antlers on its head,deer,"['deer', 'deer', 'deer', 'deer', 'deer']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),사람을 잘 따르고 털이 북실북실하며 꼬리를 흔드는 반려동물,dog,"['cat', 'cat', 'cat', 'cat', 'cat']",0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+키워드 임베딩 (Keyword),a loyal furry pet with an excitedly wagging tail,dog,"['cat', 'cat', 'cat', 'cat', 'cat']",0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.091
+키워드 임베딩 (Keyword),갈기가 휘날리는 빠르고 튼튼한 초식 동물,horse,"['horse', 'bird', 'bird', 'bird', 'bird']",1.000,0.333,0.200,0.100,0.100,0.100,0.100,0.100,1.000
+키워드 임베딩 (Keyword),a strong grazing animal with a majestic mane running fast,horse,"['horse', 'horse', 'horse', 'horse', 'horse']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),긴 팔로 나무 사이를 유연하게 옮겨 다니는 영장류,monkey,"['monkey', 'monkey', 'monkey', 'monkey', 'monkey']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),a witty primate with long arms swinging through branches,monkey,"['monkey', 'monkey', 'monkey', 'monkey', 'monkey']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),하얀 물살을 가르며 바다를 항해하는 거대한 구조물,ship,"['ship', 'ship', 'ship', 'ship', 'ship']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),a massive floating vessel cutting through the ocean waves,ship,"['ship', 'ship', 'ship', 'ship', 'ship']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),무거운 화물을 가득 싣고 화물칸이 달린 대형 차량,truck,"['truck', 'truck', 'truck', 'truck', 'truck']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+키워드 임베딩 (Keyword),a heavy-duty commercial vehicle designed to carry large cargo,truck,"['truck', 'truck', 'truck', 'truck', 'truck']",1.000,1.000,1.000,1.000,0.100,0.300,0.500,1.000,1.000
+전체 임베딩 (Full) (평균),,,,0.700,0.667,0.690,0.615,0.070,0.200,0.345,0.615,0.827
+키워드 임베딩 (Keyword) (평균),,,,0.800,0.750,0.730,0.725,0.080,0.225,0.365,0.725,0.826

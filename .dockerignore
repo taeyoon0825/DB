@@ -1,0 +1,17 @@
+.git
+.gitignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+data/
+chroma_full/
+chroma_keyword/
+evaluation_results/
+_stl10_raw/
+이미지/
+이미지_backup_dummy/
+temp_query_image.jpg
+.pytest_cache/

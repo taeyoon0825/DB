@@ -1,0 +1,29 @@
+services:
+  app:
+    build: .
+    ports:
+      - "8501:8501"
+    environment:
+      APP_DATA_DIR: /data
+      IMAGE_DIR: /data/images
+      CHROMA_FULL_DIR: /data/chroma_full
+      CHROMA_KEYWORD_DIR: /data/chroma_keyword
+      EVAL_DIR: /data/evaluation
+      TEMP_DIR: /data/tmp
+      STL10_RAW_DIR: /data/_stl10_raw
+    volumes:
+      - ./app_data:/data
+
+  init-data:
+    build: .
+    command: ["python", "initialize_data.py"]
+    environment:
+      APP_DATA_DIR: /data
+      IMAGE_DIR: /data/images
+      CHROMA_FULL_DIR: /data/chroma_full
+      CHROMA_KEYWORD_DIR: /data/chroma_keyword
+      EVAL_DIR: /data/evaluation
+      TEMP_DIR: /data/tmp
+      STL10_RAW_DIR: /data/_stl10_raw
+    volumes:
+      - ./app_data:/data

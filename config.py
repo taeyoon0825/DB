@@ -1,25 +1,50 @@
-"""프로젝트 설정"""
+"""Application configuration and filesystem paths."""
+
+from __future__ import annotations
+
 import os
+from pathlib import Path
 
-# 기본 경로
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-IMAGE_DIR = os.path.join(BASE_DIR, "이미지")
+BASE_DIR = Path(__file__).resolve().parent
 
-# ChromaDB 경로
-CHROMA_FULL_DIR = os.path.join(BASE_DIR, "chroma_full")
-CHROMA_KEYWORD_DIR = os.path.join(BASE_DIR, "chroma_keyword")
 
-# 컬렉션 이름
+def _env_path(name: str, default: Path) -> Path:
+    value = os.getenv(name)
+    if not value:
+        return default.resolve()
+    return Path(value).expanduser().resolve()
+
+
+APP_DATA_DIR = _env_path("APP_DATA_DIR", BASE_DIR / "data")
+IMAGE_DIR = _env_path("IMAGE_DIR", APP_DATA_DIR / "images")
+CHROMA_FULL_DIR = _env_path("CHROMA_FULL_DIR", APP_DATA_DIR / "chroma_full")
+CHROMA_KEYWORD_DIR = _env_path("CHROMA_KEYWORD_DIR", APP_DATA_DIR / "chroma_keyword")
+EVAL_DIR = _env_path("EVAL_DIR", APP_DATA_DIR / "evaluation")
+TEMP_DIR = _env_path("TEMP_DIR", APP_DATA_DIR / "tmp")
+STL10_RAW_DIR = _env_path("STL10_RAW_DIR", APP_DATA_DIR / "_stl10_raw")
+LOG_DIR = _env_path("LOG_DIR", APP_DATA_DIR / "logs")
+
+EVAL_CSV_PATH = EVAL_DIR / "comparison_results.csv"
+EVAL_JSON_PATH = EVAL_DIR / "comparison_results.json"
+EVAL_CHART_PATH = EVAL_DIR / "comparison_chart.png"
+TEMP_QUERY_IMAGE_PATH = TEMP_DIR / "temp_query_image.jpg"
+
 COLLECTION_FULL = "image_full_embedding"
 COLLECTION_KEYWORD = "image_keyword_embedding"
 
-# 이미지 카테고리
 CATEGORIES = [
-    "airplane", "bird", "car", "cat", "deer",
-    "dog", "horse", "monkey", "ship", "truck",
+    "airplane",
+    "bird",
+    "car",
+    "cat",
+    "deer",
+    "dog",
+    "horse",
+    "monkey",
+    "ship",
+    "truck",
 ]
 
-# 카테고리 한글 매핑
 CATEGORY_KR = {
     "airplane": "비행기",
     "bird": "새",
@@ -33,9 +58,19 @@ CATEGORY_KR = {
     "truck": "트럭",
 }
 
-# 지원 포맷
 SUPPORTED_FORMATS = {".jpg", ".jpeg", ".png", ".webp", ".svg"}
 
-# 임베딩 모델
-CLIP_MODEL_NAME = "ViT-B-32"
-CLIP_PRETRAINED = "laion2b_s34b_b79k"
+CLIP_MODEL_NAME = os.getenv("CLIP_MODEL_NAME", "ViT-B-32")
+CLIP_PRETRAINED = os.getenv("CLIP_PRETRAINED", "laion2b_s34b_b79k")
+ENABLE_QUERY_TRANSLATION = os.getenv("ENABLE_QUERY_TRANSLATION", "true").lower() == "true"
+
+
+def ensure_app_dirs() -> None:
+    for path in (APP_DATA_DIR, TEMP_DIR, LOG_DIR):
+        path.mkdir(parents=True, exist_ok=True)
+
+
+def ensure_data_dirs() -> None:
+    ensure_app_dirs()
+    for path in (IMAGE_DIR, CHROMA_FULL_DIR, CHROMA_KEYWORD_DIR, EVAL_DIR, STL10_RAW_DIR):
+        path.mkdir(parents=True, exist_ok=True)

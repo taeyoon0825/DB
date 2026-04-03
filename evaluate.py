@@ -1,30 +1,38 @@
 """
-정량적 비교 평가 스크립트
-전체 임베딩 vs 키워드 임베딩의 검색 품질을 메트릭으로 비교합니다.
+Quantitative evaluation for full vs keyword embedding search.
 """
+
+from __future__ import annotations
+
+import csv
+import json
 import os
 import sys
-import json
-import csv
-from typing import List, Dict
-
-# Windows UTF-8 출력 설정
-sys.stdout.reconfigure(encoding='utf-8')
+from pathlib import Path
+from typing import Dict, List
 
 import chromadb
-import numpy as np
-import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.rcParams['font.family'] = 'Malgun Gothic'
-matplotlib.rcParams['axes.unicode_minus'] = False
+import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import font_manager
 
 from config import (
-    BASE_DIR, CHROMA_FULL_DIR, CHROMA_KEYWORD_DIR,
-    COLLECTION_FULL, COLLECTION_KEYWORD, CATEGORY_KR,
+    CATEGORY_KR,
+    CHROMA_FULL_DIR,
+    CHROMA_KEYWORD_DIR,
+    COLLECTION_FULL,
+    COLLECTION_KEYWORD,
+    EVAL_CHART_PATH,
+    EVAL_CSV_PATH,
+    EVAL_DIR,
+    EVAL_JSON_PATH,
 )
 from embedder import CLIPEmbedder
 
-# 테스트 쿼리 및 정답 카테고리 (서술형/추상적 묘사 위주로 변별력 강화)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 TEST_QUERIES = [
     {"query": "구름을 뚫고 지나가는 날개 달린 거대한 기계", "expected": "airplane"},
     {"query": "a large metal vehicle with wings soaring high", "expected": "airplane"},
@@ -49,55 +57,84 @@ TEST_QUERIES = [
 ]
 
 
+def configure_matplotlib_font() -> None:
+    candidates = [
+        "Malgun Gothic",
+        "AppleGothic",
+        "Noto Sans CJK KR",
+        "NanumGothic",
+        "DejaVu Sans",
+    ]
+    available_fonts = {font.name for font in font_manager.fontManager.ttflist}
+    for candidate in candidates:
+        if candidate in available_fonts:
+            matplotlib.rcParams["font.family"] = candidate
+            break
+    matplotlib.rcParams["axes.unicode_minus"] = False
+
+
 def precision_at_k(retrieved_categories: List[str], expected: str, k: int) -> float:
-    """Precision@K: 상위 K 결과 중 정답 비율"""
     top_k = retrieved_categories[:k]
     if not top_k:
         return 0.0
-    return sum(1 for c in top_k if c == expected) / len(top_k)
+    return sum(1 for category in top_k if category == expected) / len(top_k)
 
 
 def recall_at_k(retrieved_categories: List[str], expected: str, k: int, total_relevant: int) -> float:
-    """Recall@K: 전체 정답 중 상위 K에 포함된 비율"""
     if total_relevant == 0:
         return 0.0
     top_k = retrieved_categories[:k]
-    return sum(1 for c in top_k if c == expected) / total_relevant
+    return sum(1 for category in top_k if category == expected) / total_relevant
 
 
 def mrr(retrieved_categories: List[str], expected: str) -> float:
-    """MRR: 첫 번째 정답의 역수 순위"""
-    for i, c in enumerate(retrieved_categories):
-        if c == expected:
-            return 1.0 / (i + 1)
+    for index, category in enumerate(retrieved_categories):
+        if category == expected:
+            return 1.0 / (index + 1)
     return 0.0
 
 
-def evaluate_mode(embedder: CLIPEmbedder, chroma_dir: str, collection_name: str, mode_name: str) -> Dict:
-    """특정 임베딩 모드의 검색 품질 평가"""
-    client = chromadb.PersistentClient(path=chroma_dir)
-    collection = client.get_collection(name=collection_name)
-    total_count = collection.count()
+def evaluate_mode(embedder: CLIPEmbedder, chroma_dir: str | Path, collection_name: str, mode_name: str) -> Dict:
+    client = chromadb.PersistentClient(path=os.fspath(chroma_dir))
+    try:
+        collection = client.get_collection(name=collection_name)
+    except Exception as exc:
+        raise RuntimeError(
+            f"평가 대상 컬렉션 '{collection_name}' 을(를) 찾을 수 없습니다. "
+            "먼저 `python initialize_data.py --skip-evaluate` 또는 `python embed_all.py --mode both` 를 실행하세요."
+        ) from exc
 
-    print(f"\n{'='*50}")
+    total_count = collection.count()
+    if total_count == 0:
+        raise RuntimeError(
+            f"평가 대상 컬렉션 '{collection_name}' 이 비어 있습니다. "
+            "먼저 데이터를 임베딩하세요."
+        )
+
+    print(f"\n{'=' * 50}")
     print(f" {mode_name} 평가 시작 (DB 크기: {total_count})")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
 
     results = {
         "mode": mode_name,
         "queries": [],
-        "avg_precision_1": 0, "avg_precision_3": 0,
-        "avg_precision_5": 0, "avg_precision_10": 0,
-        "avg_recall_1": 0, "avg_recall_3": 0,
-        "avg_recall_5": 0, "avg_recall_10": 0,
+        "avg_precision_1": 0,
+        "avg_precision_3": 0,
+        "avg_precision_5": 0,
+        "avg_precision_10": 0,
+        "avg_recall_1": 0,
+        "avg_recall_3": 0,
+        "avg_recall_5": 0,
+        "avg_recall_10": 0,
         "avg_mrr": 0,
     }
 
-    for q_info in TEST_QUERIES:
-        query = q_info["query"]
-        expected = q_info["expected"]
+    collection_metadata = collection.get(include=["metadatas"])["metadatas"]
 
-        # 쿼리 벡터화 → 검색 (번역 적용)
+    for query_info in TEST_QUERIES:
+        query = query_info["query"]
+        expected = query_info["expected"]
+
         query_vec = embedder.embed_text(query, translate=True).tolist()
         search_results = collection.query(
             query_embeddings=[query_vec],
@@ -105,46 +142,60 @@ def evaluate_mode(embedder: CLIPEmbedder, chroma_dir: str, collection_name: str,
             include=["metadatas", "distances"],
         )
 
-        retrieved_cats = [
-            m.get("category", "") for m in search_results["metadatas"][0]
+        retrieved_categories = [
+            metadata.get("category", "") for metadata in search_results["metadatas"][0]
         ]
 
-        # 해당 카테고리의 전체 개수 (ground truth)
-        total_relevant = sum(1 for m in collection.get(include=["metadatas"])["metadatas"]
-                            if m.get("category") == expected)
+        total_relevant = sum(
+            1 for metadata in collection_metadata if metadata.get("category") == expected
+        )
 
-        p1 = precision_at_k(retrieved_cats, expected, 1)
-        p3 = precision_at_k(retrieved_cats, expected, 3)
-        p5 = precision_at_k(retrieved_cats, expected, 5)
-        p10 = precision_at_k(retrieved_cats, expected, 10)
-        r1 = recall_at_k(retrieved_cats, expected, 1, total_relevant)
-        r3 = recall_at_k(retrieved_cats, expected, 3, total_relevant)
-        r5 = recall_at_k(retrieved_cats, expected, 5, total_relevant)
-        r10 = recall_at_k(retrieved_cats, expected, 10, total_relevant)
-        mrr_val = mrr(retrieved_cats, expected)
+        p1 = precision_at_k(retrieved_categories, expected, 1)
+        p3 = precision_at_k(retrieved_categories, expected, 3)
+        p5 = precision_at_k(retrieved_categories, expected, 5)
+        p10 = precision_at_k(retrieved_categories, expected, 10)
+        r1 = recall_at_k(retrieved_categories, expected, 1, total_relevant)
+        r3 = recall_at_k(retrieved_categories, expected, 3, total_relevant)
+        r5 = recall_at_k(retrieved_categories, expected, 5, total_relevant)
+        r10 = recall_at_k(retrieved_categories, expected, 10, total_relevant)
+        mrr_value = mrr(retrieved_categories, expected)
 
-        results["queries"].append({
-            "query": query,
-            "expected": expected,
-            "top5_retrieved": retrieved_cats[:5],
-            "precision@1": p1, "precision@3": p3,
-            "precision@5": p5, "precision@10": p10,
-            "recall@1": r1, "recall@3": r3,
-            "recall@5": r5, "recall@10": r10,
-            "mrr": mrr_val,
-        })
+        results["queries"].append(
+            {
+                "query": query,
+                "expected": expected,
+                "top5_retrieved": retrieved_categories[:5],
+                "precision@1": p1,
+                "precision@3": p3,
+                "precision@5": p5,
+                "precision@10": p10,
+                "recall@1": r1,
+                "recall@3": r3,
+                "recall@5": r5,
+                "recall@10": r10,
+                "mrr": mrr_value,
+            }
+        )
 
         expected_kr = CATEGORY_KR.get(expected, expected)
-        top3_kr = [CATEGORY_KR.get(c, c) for c in retrieved_cats[:3]]
+        top3_kr = [CATEGORY_KR.get(category, category) for category in retrieved_categories[:3]]
         hit = "O" if p1 > 0 else "X"
-        print(f"  {hit} [{expected_kr}] \"{query}\" → Top3: {top3_kr}  P@1={p1:.1f} MRR={mrr_val:.2f}")
+        print(f"  {hit} [{expected_kr}] \"{query}\" -> Top3: {top3_kr}  P@1={p1:.1f} MRR={mrr_value:.2f}")
 
-    # 평균 계산
-    n = len(TEST_QUERIES)
-    for metric in ["precision@1", "precision@3", "precision@5", "precision@10",
-                    "recall@1", "recall@3", "recall@5", "recall@10", "mrr"]:
+    query_count = len(TEST_QUERIES)
+    for metric in [
+        "precision@1",
+        "precision@3",
+        "precision@5",
+        "precision@10",
+        "recall@1",
+        "recall@3",
+        "recall@5",
+        "recall@10",
+        "mrr",
+    ]:
         key = f"avg_{metric.replace('@', '_')}"
-        results[key] = sum(q[metric] for q in results["queries"]) / n
+        results[key] = sum(query_result[metric] for query_result in results["queries"]) / query_count
 
     print(f"\n  평균 Precision@1:  {results['avg_precision_1']:.3f}")
     print(f"  평균 Precision@5:  {results['avg_precision_5']:.3f}")
@@ -155,66 +206,107 @@ def evaluate_mode(embedder: CLIPEmbedder, chroma_dir: str, collection_name: str,
     return results
 
 
-def save_csv(full_results: Dict, keyword_results: Dict, output_path: str):
-    """결과를 CSV로 저장"""
-    with open(output_path, "w", newline="", encoding="utf-8-sig") as f:
-        writer = csv.writer(f)
-        writer.writerow([
-            "모드", "쿼리", "정답 카테고리", "Top5 결과",
-            "P@1", "P@3", "P@5", "P@10",
-            "R@1", "R@3", "R@5", "R@10", "MRR",
-        ])
+def save_csv(full_results: Dict, keyword_results: Dict, output_path: Path) -> None:
+    with open(output_path, "w", newline="", encoding="utf-8-sig") as file:
+        writer = csv.writer(file)
+        writer.writerow(
+            [
+                "모드",
+                "쿼리",
+                "정답 카테고리",
+                "Top5 결과",
+                "P@1",
+                "P@3",
+                "P@5",
+                "P@10",
+                "R@1",
+                "R@3",
+                "R@5",
+                "R@10",
+                "MRR",
+            ]
+        )
 
         for results in [full_results, keyword_results]:
-            for q in results["queries"]:
-                writer.writerow([
-                    results["mode"], q["query"], q["expected"],
-                    str(q["top5_retrieved"]),
-                    f"{q['precision@1']:.3f}", f"{q['precision@3']:.3f}",
-                    f"{q['precision@5']:.3f}", f"{q['precision@10']:.3f}",
-                    f"{q['recall@1']:.3f}", f"{q['recall@3']:.3f}",
-                    f"{q['recall@5']:.3f}", f"{q['recall@10']:.3f}",
-                    f"{q['mrr']:.3f}",
-                ])
+            for query_result in results["queries"]:
+                writer.writerow(
+                    [
+                        results["mode"],
+                        query_result["query"],
+                        query_result["expected"],
+                        str(query_result["top5_retrieved"]),
+                        f"{query_result['precision@1']:.3f}",
+                        f"{query_result['precision@3']:.3f}",
+                        f"{query_result['precision@5']:.3f}",
+                        f"{query_result['precision@10']:.3f}",
+                        f"{query_result['recall@1']:.3f}",
+                        f"{query_result['recall@3']:.3f}",
+                        f"{query_result['recall@5']:.3f}",
+                        f"{query_result['recall@10']:.3f}",
+                        f"{query_result['mrr']:.3f}",
+                    ]
+                )
 
-        # 평균 행
         for results in [full_results, keyword_results]:
-            writer.writerow([
-                f"{results['mode']} (평균)", "", "",
-                "",
-                f"{results['avg_precision_1']:.3f}", f"{results['avg_precision_3']:.3f}",
-                f"{results['avg_precision_5']:.3f}", f"{results['avg_precision_10']:.3f}",
-                f"{results['avg_recall_1']:.3f}", f"{results['avg_recall_3']:.3f}",
-                f"{results['avg_recall_5']:.3f}", f"{results['avg_recall_10']:.3f}",
-                f"{results['avg_mrr']:.3f}",
-            ])
+            writer.writerow(
+                [
+                    f"{results['mode']} (평균)",
+                    "",
+                    "",
+                    "",
+                    f"{results['avg_precision_1']:.3f}",
+                    f"{results['avg_precision_3']:.3f}",
+                    f"{results['avg_precision_5']:.3f}",
+                    f"{results['avg_precision_10']:.3f}",
+                    f"{results['avg_recall_1']:.3f}",
+                    f"{results['avg_recall_3']:.3f}",
+                    f"{results['avg_recall_5']:.3f}",
+                    f"{results['avg_recall_10']:.3f}",
+                    f"{results['avg_mrr']:.3f}",
+                ]
+            )
 
     print(f"\nCSV 저장: {output_path}")
 
 
-def save_chart(full_results: Dict, keyword_results: Dict, output_path: str):
-    """비교 차트 생성"""
+def save_chart(full_results: Dict, keyword_results: Dict, output_path: Path) -> None:
     metrics = ["Precision@1", "Precision@3", "Precision@5", "Precision@10", "MRR"]
-    full_vals = [
-        full_results["avg_precision_1"], full_results["avg_precision_3"],
-        full_results["avg_precision_5"], full_results["avg_precision_10"],
+    full_values = [
+        full_results["avg_precision_1"],
+        full_results["avg_precision_3"],
+        full_results["avg_precision_5"],
+        full_results["avg_precision_10"],
         full_results["avg_mrr"],
     ]
-    keyword_vals = [
-        keyword_results["avg_precision_1"], keyword_results["avg_precision_3"],
-        keyword_results["avg_precision_5"], keyword_results["avg_precision_10"],
+    keyword_values = [
+        keyword_results["avg_precision_1"],
+        keyword_results["avg_precision_3"],
+        keyword_results["avg_precision_5"],
+        keyword_results["avg_precision_10"],
         keyword_results["avg_mrr"],
     ]
 
     x = np.arange(len(metrics))
     width = 0.35
-
     fig, axes = plt.subplots(1, 2, figsize=(16, 6))
 
-    # 차트 1: Precision + MRR 비교
     ax1 = axes[0]
-    bars1 = ax1.bar(x - width / 2, full_vals, width, label="전체 임베딩", color="#4ECDC4", edgecolor="white")
-    bars2 = ax1.bar(x + width / 2, keyword_vals, width, label="키워드 임베딩", color="#FF6B6B", edgecolor="white")
+    bars1 = ax1.bar(
+        x - width / 2,
+        full_values,
+        width,
+        label="전체 임베딩",
+        color="#4ECDC4",
+        edgecolor="white",
+    )
+    bars2 = ax1.bar(
+        x + width / 2,
+        keyword_values,
+        width,
+        label="키워드 임베딩",
+        color="#FF6B6B",
+        edgecolor="white",
+    )
     ax1.set_xlabel("메트릭")
     ax1.set_ylabel("점수")
     ax1.set_title("전체 임베딩 vs 키워드 임베딩 비교")
@@ -224,97 +316,124 @@ def save_chart(full_results: Dict, keyword_results: Dict, output_path: str):
     ax1.legend()
     ax1.grid(axis="y", alpha=0.3)
 
-    # 바 위에 값 표시
     for bar in bars1:
-        ax1.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02,
-                 f"{bar.get_height():.2f}", ha="center", va="bottom", fontsize=9)
+        ax1.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.02,
+            f"{bar.get_height():.2f}",
+            ha="center",
+            va="bottom",
+            fontsize=9,
+        )
     for bar in bars2:
-        ax1.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02,
-                 f"{bar.get_height():.2f}", ha="center", va="bottom", fontsize=9)
+        ax1.text(
+            bar.get_x() + bar.get_width() / 2,
+            bar.get_height() + 0.02,
+            f"{bar.get_height():.2f}",
+            ha="center",
+            va="bottom",
+            fontsize=9,
+        )
 
-    # 차트 2: 카테고리별 P@1 비교
     ax2 = axes[1]
-    categories = list(CATEGORY_KR.values())
-    full_p1_by_cat = {}
-    kw_p1_by_cat = {}
+    full_p1_by_category = {}
+    keyword_p1_by_category = {}
 
-    for q in full_results["queries"]:
-        cat = CATEGORY_KR.get(q["expected"], q["expected"])
-        full_p1_by_cat.setdefault(cat, []).append(q["precision@1"])
-    for q in keyword_results["queries"]:
-        cat = CATEGORY_KR.get(q["expected"], q["expected"])
-        kw_p1_by_cat.setdefault(cat, []).append(q["precision@1"])
+    for query_result in full_results["queries"]:
+        category = CATEGORY_KR.get(query_result["expected"], query_result["expected"])
+        full_p1_by_category.setdefault(category, []).append(query_result["precision@1"])
+    for query_result in keyword_results["queries"]:
+        category = CATEGORY_KR.get(query_result["expected"], query_result["expected"])
+        keyword_p1_by_category.setdefault(category, []).append(query_result["precision@1"])
 
-    cats = sorted(full_p1_by_cat.keys())
-    full_cat_vals = [np.mean(full_p1_by_cat.get(c, [0])) for c in cats]
-    kw_cat_vals = [np.mean(kw_p1_by_cat.get(c, [0])) for c in cats]
+    categories = sorted(full_p1_by_category.keys())
+    full_category_values = [np.mean(full_p1_by_category.get(category, [0])) for category in categories]
+    keyword_category_values = [
+        np.mean(keyword_p1_by_category.get(category, [0])) for category in categories
+    ]
 
-    x2 = np.arange(len(cats))
-    ax2.bar(x2 - width / 2, full_cat_vals, width, label="전체 임베딩", color="#4ECDC4", edgecolor="white")
-    ax2.bar(x2 + width / 2, kw_cat_vals, width, label="키워드 임베딩", color="#FF6B6B", edgecolor="white")
+    x2 = np.arange(len(categories))
+    ax2.bar(
+        x2 - width / 2,
+        full_category_values,
+        width,
+        label="전체 임베딩",
+        color="#4ECDC4",
+        edgecolor="white",
+    )
+    ax2.bar(
+        x2 + width / 2,
+        keyword_category_values,
+        width,
+        label="키워드 임베딩",
+        color="#FF6B6B",
+        edgecolor="white",
+    )
     ax2.set_xlabel("카테고리")
     ax2.set_ylabel("Precision@1")
     ax2.set_title("카테고리별 Precision@1 비교")
     ax2.set_xticks(x2)
-    ax2.set_xticklabels(cats, rotation=45, ha="right")
+    ax2.set_xticklabels(categories, rotation=45, ha="right")
     ax2.set_ylim(0, 1.3)
     ax2.legend()
     ax2.grid(axis="y", alpha=0.3)
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=150, bbox_inches="tight")
-    print(f"차트 저장: {output_path}")
     plt.close()
+    print(f"차트 저장: {output_path}")
 
 
-def main():
-    output_dir = os.path.join(BASE_DIR, "evaluation_results")
-    os.makedirs(output_dir, exist_ok=True)
+def run_evaluation() -> dict:
+    configure_matplotlib_font()
+    EVAL_DIR.mkdir(parents=True, exist_ok=True)
 
-    # CLIP 로딩
     embedder = CLIPEmbedder()
-
-    # 전체 임베딩 평가
-    full_results = evaluate_mode(
-        embedder, CHROMA_FULL_DIR, COLLECTION_FULL, "전체 임베딩 (Full)"
-    )
-
-    # 키워드 임베딩 평가
+    full_results = evaluate_mode(embedder, CHROMA_FULL_DIR, COLLECTION_FULL, "전체 임베딩 (Full)")
     keyword_results = evaluate_mode(
-        embedder, CHROMA_KEYWORD_DIR, COLLECTION_KEYWORD, "키워드 임베딩 (Keyword)"
+        embedder,
+        CHROMA_KEYWORD_DIR,
+        COLLECTION_KEYWORD,
+        "키워드 임베딩 (Keyword)",
     )
 
-    # 결과 저장
-    csv_path = os.path.join(output_dir, "comparison_results.csv")
-    save_csv(full_results, keyword_results, csv_path)
+    save_csv(full_results, keyword_results, EVAL_CSV_PATH)
+    save_chart(full_results, keyword_results, EVAL_CHART_PATH)
 
-    chart_path = os.path.join(output_dir, "comparison_chart.png")
-    save_chart(full_results, keyword_results, chart_path)
+    with open(EVAL_JSON_PATH, "w", encoding="utf-8") as file:
+        json.dump({"full": full_results, "keyword": keyword_results}, file, ensure_ascii=False, indent=2)
+    print(f"JSON 저장: {EVAL_JSON_PATH}")
 
-    # JSON 결과도 저장
-    json_path = os.path.join(output_dir, "comparison_results.json")
-    with open(json_path, "w", encoding="utf-8") as f:
-        json.dump({"full": full_results, "keyword": keyword_results}, f, ensure_ascii=False, indent=2)
-    print(f"JSON 저장: {json_path}")
-
-    print(f"\n{'='*50}")
+    print(f"\n{'=' * 50}")
     print(" 최종 비교 요약")
-    print(f"{'='*50}")
+    print(f"{'=' * 50}")
     print(f"  {'메트릭':<16} {'전체 임베딩':>10} {'키워드 임베딩':>12} {'차이':>8}")
-    print(f"  {'-'*48}")
-    for metric, k1, k2 in [
-        ("Precision@1", "avg_precision_1", "avg_precision_1"),
-        ("Precision@5", "avg_precision_5", "avg_precision_5"),
-        ("Precision@10", "avg_precision_10", "avg_precision_10"),
-        ("Recall@10", "avg_recall_10", "avg_recall_10"),
-        ("MRR", "avg_mrr", "avg_mrr"),
+    print(f"  {'-' * 48}")
+
+    for metric, key in [
+        ("Precision@1", "avg_precision_1"),
+        ("Precision@5", "avg_precision_5"),
+        ("Precision@10", "avg_precision_10"),
+        ("Recall@10", "avg_recall_10"),
+        ("MRR", "avg_mrr"),
     ]:
-        f_val = full_results[k1]
-        k_val = keyword_results[k2]
-        diff = f_val - k_val
+        full_value = full_results[key]
+        keyword_value = keyword_results[key]
+        diff = full_value - keyword_value
         sign = "+" if diff > 0 else ""
-        print(f"  {metric:<16} {f_val:>10.3f} {k_val:>12.3f} {sign}{diff:>7.3f}")
+        print(f"  {metric:<16} {full_value:>10.3f} {keyword_value:>12.3f} {sign}{diff:>7.3f}")
+
+    return {"full": full_results, "keyword": keyword_results}
+
+
+def main() -> int:
+    try:
+        run_evaluation()
+        return 0
+    except Exception as exc:
+        print(f"평가 실패: {exc}", file=sys.stderr)
+        return 1
 
 
 if __name__ == "__main__":
-    main()
+    raise SystemExit(main())
