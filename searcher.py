@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import os
+from pathlib import Path
 from typing import Dict, List
 
 import chromadb
@@ -21,6 +22,7 @@ from config import (
     CHROMA_KEYWORD_DIR,
     COLLECTION_FULL,
     COLLECTION_KEYWORD,
+    IMAGE_DIR,
 )
 from embedder import CLIPEmbedder
 
@@ -100,12 +102,13 @@ class ImageSearcher:
             metadata = results["metadatas"][0][index]
             distance = results["distances"][0][index]
             similarity = 1 - distance
+            resolved_path = self._resolve_image_path(metadata)
 
             formatted.append(
                 {
                     "id": item_id,
                     "similarity": round(similarity, 4),
-                    "path": metadata.get("path", ""),
+                    "path": resolved_path,
                     "filename": metadata.get("filename", ""),
                     "category": metadata.get("category", ""),
                     "category_kr": metadata.get("category_kr", ""),
@@ -114,6 +117,34 @@ class ImageSearcher:
             )
 
         return formatted
+
+    def _resolve_image_path(self, metadata: Dict) -> str:
+        """
+        이미지 실제 경로를 현재 실행 환경 기준으로 복원한다.
+
+        배포 환경에서는 Chroma 메타데이터에 들어 있는 Windows 절대경로가
+        존재하지 않을 수 있다. 그 경우 category/filename 조합으로
+        현재 환경의 IMAGE_DIR 아래 경로를 다시 만든다.
+        """
+        raw_path = metadata.get("path", "")
+        if raw_path and Path(raw_path).exists():
+            return raw_path
+
+        relative_path = metadata.get("relative_path")
+        if relative_path:
+            candidate = IMAGE_DIR / relative_path
+            if candidate.exists():
+                return str(candidate)
+
+        category = metadata.get("category", "")
+        filename = metadata.get("filename", "")
+        if category and filename:
+            candidate = IMAGE_DIR / category / filename
+            if candidate.exists():
+                return str(candidate)
+
+        # 복원에 실패하면 원래 경로를 그대로 반환하고 UI 쪽에서 에러를 보여준다.
+        return raw_path
 
 
 def print_results(results: List[Dict], title: str = "검색 결과") -> None:

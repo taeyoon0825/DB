@@ -122,6 +122,7 @@ def scan_images(base_dir: str | Path) -> List[Dict]:
             {
                 "id": f"{category}_{path.name}",
                 "path": str(path.resolve()),
+                "relative_path": str(Path(category) / path.name),
                 "filename": path.name,
                 "category": category,
                 "category_kr": category_kr,
@@ -173,6 +174,7 @@ def embed_full(embedder: CLIPEmbedder, image_files: List[Dict], chroma_dir: str 
                 metadatas.append(
                     {
                         "path": info["path"],
+                        "relative_path": info["relative_path"],
                         "filename": info["filename"],
                         "category": info["category"],
                         "category_kr": info["category_kr"],
@@ -240,6 +242,7 @@ def embed_keyword(embedder: CLIPEmbedder, image_files: List[Dict], chroma_dir: s
                 metadatas.append(
                     {
                         "path": info["path"],
+                        "relative_path": info["relative_path"],
                         "filename": info["filename"],
                         "category": info["category"],
                         "category_kr": info["category_kr"],
