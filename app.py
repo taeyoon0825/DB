@@ -93,6 +93,17 @@ def display_results(results, cols_per_row=5):
 
 
 def main():
+    import sys
+    import subprocess
+    if not os.path.exists(CHROMA_FULL_DIR) or not os.path.exists(IMAGE_DIR):
+        with st.spinner("서버 최초 세팅 중... 더미 이미지 및 검색용 벡터 DB를 생성합니다. (약 1~2분 소요)"):
+            try:
+                subprocess.run([sys.executable, "scripts/download_stl10.py"], check=False)
+                subprocess.run([sys.executable, "embed_all.py", "--mode", "both"], check=False)
+                st.success("초기 데모 데이터 세팅 완료!")
+            except Exception as e:
+                st.error(f"데이터 생성 실패: {e}")
+
     st.title("🔍 이미지 벡터 검색 시스템")
     st.markdown("*CLIP 임베딩 기반 이미지 검색 — 전체 임베딩 vs 키워드 임베딩 비교*")
 
