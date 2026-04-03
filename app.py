@@ -12,6 +12,7 @@ Streamlit 기반 이미지 검색 UI.
 from __future__ import annotations
 
 import os
+from pathlib import Path
 
 import chromadb
 import pandas as pd
@@ -25,6 +26,7 @@ from config import (
     COLLECTION_KEYWORD,
     EVAL_CHART_PATH,
     EVAL_CSV_PATH,
+    IMAGE_DIR,
     TEMP_QUERY_IMAGE_PATH,
     ensure_app_dirs,
 )
@@ -101,7 +103,8 @@ def display_results(results, cols_per_row: int = 5) -> None:
             result = results[idx]
             with col:
                 try:
-                    img = Image.open(result["path"])
+                    image_path = resolve_display_image_path(result)
+                    img = Image.open(image_path)
                     st.image(img, use_container_width=True)
                 except Exception as exc:
                     st.error(f"이미지 로드 실패: {exc}")
@@ -117,7 +120,30 @@ def display_results(results, cols_per_row: int = 5) -> None:
                 )
                 st.caption(f"📁 {result['filename']}")
                 with st.expander("전체 경로"):
-                    st.code(result["path"], language=None)
+                    st.code(resolve_display_image_path(result), language=None)
+
+
+def resolve_display_image_path(result: dict) -> str:
+    """
+    화면에 표시할 이미지 경로를 현재 실행 환경 기준으로 복원한다.
+
+    우선순위:
+    1. result["path"] 가 실제로 존재하면 그대로 사용
+    2. category + filename 조합으로 IMAGE_DIR 아래 경로 복원
+    3. 그래도 못 찾으면 원래 path 반환
+    """
+    raw_path = result.get("path", "")
+    if raw_path and Path(raw_path).exists():
+        return raw_path
+
+    category = result.get("category", "")
+    filename = result.get("filename", "")
+    if category and filename:
+        candidate = IMAGE_DIR / category / filename
+        if candidate.exists():
+            return str(candidate)
+
+    return raw_path
 
 
 def _get_collection_status(path, collection_name: str):
